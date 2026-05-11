@@ -55,7 +55,7 @@ const SpotifyNowPlaying: Component = () => {
   createEffect(() => {
     const thisNowPlaying = nowPlayingQuery.data;
     let interval: ReturnType<typeof setInterval>;
-    let refreshTimeout = !!thisNowPlaying?.is_playing ? 8000 : 15000;
+    let refreshTimeout = !!thisNowPlaying?.is_playing ? 5500 : 15000;
     if (thisNowPlaying !== undefined) {
 
       const songDuration = thisNowPlaying?.item?.duration_ms ?? 0;

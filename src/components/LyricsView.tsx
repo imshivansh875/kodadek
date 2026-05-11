@@ -8,6 +8,12 @@ import {
 } from "solid-js";
 
 import { trpc } from "~/utils/trpc";
+import PlayerProgressBar from "./PlayerControls/PlayerProgressBar";
+import PlayerControls from "./PlayerControls/PlayerControls";
+import Screensaver from "./Screensaver";
+
+
+
 
 interface LyricLine {
   time: number;
@@ -53,6 +59,9 @@ const LyricsView: Component = () => {
 
   const [showBeat, setShowBeat] =
     createSignal(false);
+  
+  const [localProgress, setLocalProgress] =
+  createSignal(0);
 
   const [currentTrackId, setCurrentTrackId] =
     createSignal("");
@@ -60,51 +69,113 @@ const LyricsView: Component = () => {
   /*
    * Fetch synced lyrics
    */
-  createEffect(async () => {
-    const item = nowPlaying.data?.item;
+  createEffect(() => {
+  const item =
+    nowPlaying.data?.item;
 
-    if (!item) return;
+  if (!item) return;
 
-    /*
-     * Track changed
-     */
-    if (item.id !== currentTrackId()) {
-      setCurrentTrackId(item.id);
+  /*
+   * Prevent refetch
+   * for same track
+   */
+  if (
+    item.id ===
+    currentTrackId()
+  ) {
+    return;
+  }
 
-      /*
-       * Reset old lyrics instantly
-       */
-      setLyrics([]);
-      setActiveLine(0);
-    }
+  /*
+   * Track changed
+   */
+  setCurrentTrackId(item.id);
 
-    const artist =
-      item.artists?.[0]?.name || "";
+  /*
+   * Reset previous state
+   */
+  setLyrics([]);
+  setActiveLine(0);
 
-    const track = item.name || "";
+  const artist =
+    item.artists?.[0]?.name ||
+    "";
 
-    try {
-      const res = await fetch(
-        `https://lrclib.net/api/get?artist_name=${encodeURIComponent(
-          artist
-        )}&track_name=${encodeURIComponent(
-          track
-        )}`
-      );
+  const track =
+    item.name || "";
 
-      const data = await res.json();
+  const fetchLyrics =
+    async () => {
+      try {
+        const res =
+          await fetch(
+            `https://lrclib.net/api/get?artist_name=${encodeURIComponent(
+              artist
+            )}&track_name=${encodeURIComponent(
+              track
+            )}`
+          );
 
-      if (data?.syncedLyrics) {
-        setLyrics(
-          parseLRC(data.syncedLyrics)
-        );
-      } else {
+        const data =
+          await res.json();
+
+        if (
+          data?.syncedLyrics
+        ) {
+          setLyrics(
+            parseLRC(
+              data.syncedLyrics
+            )
+          );
+        } else {
+          setLyrics([]);
+        }
+      } catch {
         setLyrics([]);
       }
-    } catch {
-      setLyrics([]);
+    };
+
+  fetchLyrics();
+});
+
+  createEffect(() => {
+  const spotifyProgress =
+    nowPlaying.data?.progress_ms;
+
+  if (
+    spotifyProgress !== undefined
+  ) {
+    setLocalProgress((p) => {
+  const drift =
+    Math.abs(
+      p - spotifyProgress
+    );
+
+  /*
+   * Only resync if drift large
+   */
+  return drift > 1500
+    ? spotifyProgress
+    : p;
+});
+  }
+});
+
+  createEffect(() => {
+  const interval = setInterval(() => {
+    if (
+      nowPlaying.data?.is_playing
+    ) {
+      setLocalProgress(
+        (p) => p + 250
+      );
     }
+  }, 250);
+
+  onCleanup(() => {
+    clearInterval(interval);
   });
+});
 
   /*
    * Refresh Spotify playback
@@ -112,9 +183,11 @@ const LyricsView: Component = () => {
   createEffect(() => {
     const utils = trpc.useContext();
 
+    const refreshTimeout = nowPlaying.data?.is_playing ? 4000 : 12000;
+
     const interval = setInterval(() => {
       utils.metadata.nowPlaying.invalidate();
-    }, 1000);
+    }, refreshTimeout);
 
     onCleanup(() => {
       clearInterval(interval);
@@ -126,8 +199,7 @@ const LyricsView: Component = () => {
    */
   createEffect(() => {
     const interval = setInterval(() => {
-      const progress =
-        nowPlaying.data?.progress_ms ?? 0;
+      const progress = localProgress();
 
       const currentSeconds =
         progress / 1000;
@@ -180,7 +252,7 @@ const LyricsView: Component = () => {
 
       setShowBeat(beat);
       setActiveLine(active);
-    }, 250);
+    }, 100);
 
     onCleanup(() => {
       clearInterval(interval);
@@ -191,13 +263,27 @@ const LyricsView: Component = () => {
    * Background image
    */
   const backgroundImage = createMemo(
-    () =>
-      nowPlaying.data?.item?.album
-        ?.images?.[0]?.url || ""
-  );
+  () => {
+    const item: any =
+      nowPlaying.data?.item;
+
+    return (
+      item?.album?.images?.[0]
+        ?.url || ""
+    );
+  }
+);
+
+  const hasNowPlaying = createMemo(() => {
+    return !!nowPlaying.data?.item;
+  });
 
   return (
-    <div class="relative w-full h-full overflow-hidden bg-black text-white">
+    <div class="w-full h-full">
+      {!hasNowPlaying() ? (
+        <Screensaver />
+      ) : (
+        <div class="relative w-full h-full overflow-hidden bg-black text-white">
       {/* Background */}
       <div
         class="absolute inset-0 blur-3xl scale-110 opacity-30"
@@ -209,55 +295,69 @@ const LyricsView: Component = () => {
       />
 
       {/* Main */}
-      <div class="relative z-10 flex flex-col items-center justify-center h-full px-10">
+      <div class="relative z-10 flex flex-col h-full">
+          <div class="pt-8 flex flex-col items-center text-center shrink-0">
+            <p class="font-extrabold text-2xl max-w-[520px] leading-tight truncate">
+              {nowPlaying.data?.item.name}
+            </p>
+
+            <p class="mt-1 opacity-70 text-lg font-bold truncate max-w-[420px]">
+              {nowPlaying.data?.item.artists?.[0]?.name}
+            </p>
+          </div>
         {/* Lyrics */}
-<div class="relative h-[360px] overflow-hidden w-full">
+        <div class="flex items-center justify-center overflow-hidden px-10 pt-12">
+          <div class="relative h-[400px] overflow-hidden w-full">
   
 
-  {/* Lyrics container */}
-  <div
-    class="flex flex-col items-center transition-transform duration-700 ease-out transform-gpu"
-    style={{
-      transform: `translateY(calc(140px - ${
-        activeLine() * 74
-      }px))`,
-    }}
-  >
-    <For each={lyrics()}>
-      {(line, index) => (
-        <div
-          class={`relative h-[74px] flex items-center justify-center text-center transition-all duration-500 px-8 ${
-            index() === activeLine()
-              ? "text-white opacity-100 scale-100"
-              : "text-white/25 opacity-40 scale-[0.96]"
-          }`}
-          style={{
-            width: "100%",
-          }}
-        >
-          <span
-            class={
-              index() === activeLine()
-                ? "font-black text-4xl leading-tight tracking-tight drop-shadow-[0_0_18px_rgba(255,255,255,0.15)]"
-                : "font-bold text-2xl leading-tight"
-            }
-          >
-            {line.text}
-          </span>
+            {/* Lyrics container */}
+            <div
+              class="flex flex-col items-center transition-transform duration-700 ease-out transform-gpu"
+              style={{
+                transform: `translateY(calc(165px - ${
+                  activeLine() * 74
+                }px))`,
+              }}
+            >
+              <For each={lyrics()}>
+                {(line, index) => (
+                  <div
+                    class={`relative h-[74px] flex items-center justify-center text-center transition-all duration-500 px-8 ${
+                      index() === activeLine()
+                        ? "text-white opacity-100 scale-100"
+                        : "text-white/25 opacity-40 scale-[0.96]"
+                    }`}
+                    style={{
+                      width: "100%",
+                    }}
+                  >
+                    <span
+                      class={
+                        index() === activeLine()
+                          ? "font-black text-4xl leading-tight tracking-tight drop-shadow-[0_0_18px_rgba(255,255,255,0.15)]"
+                          : "font-semibold text-2xl leading-tight"
+                      }
+                    >
+                      {line.text}
+                    </span>
 
-          {index() === activeLine() &&
-            showBeat() && (
-              <span class="absolute -bottom-7 text-lg opacity-40 animate-pulse tracking-[6px]">
-                ♪ ♪ ♪
-              </span>
-            )}
+                    {index() === activeLine() &&
+                      showBeat() && (
+                        <span class="absolute -bottom-7 text-lg opacity-40 animate-pulse tracking-[6px]">
+                          ♪ ♪ ♪
+                        </span>
+                      )}
+                  </div>
+                  )}
+              </For>
+            </div>
+          </div>
+          <PlayerControls isSaved={true} />
         </div>
-      )}
-    </For>
-  </div>
-</div>
       </div>
     </div>
+    )}
+      </div>
   );
 };
 
