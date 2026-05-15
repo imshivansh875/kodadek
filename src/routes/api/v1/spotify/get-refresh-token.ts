@@ -9,8 +9,8 @@ export async function GET({ request }: APIEvent) {
   const searchParams = new URL(request.url).searchParams;
 
   try {
-    const client_id = process.env.SPOTIFY_CLIENT_ID || process.env.VITE_SPOTIFY_CLIENT_ID || import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-    const client_secret = process.env.SPOTIFY_CLIENT_SECRET || process.env.VITE_SPOTIFY_CLIENT_SECRET || import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
+    const client_id = process.env.SPOTIFY_CLIENT_ID || import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+    const client_secret = process.env.SPOTIFY_CLIENT_SECRET;
     const basic = btoa(`${client_id}:${client_secret}`);
 
     const res = await fetch(TOKEN_ENDPOINT, {

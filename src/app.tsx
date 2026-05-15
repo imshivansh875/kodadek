@@ -19,8 +19,6 @@ const getBaseUrl = () => {
   return `http://127.0.0.1:${process.env.PORT ?? 3000}`;
 };
 
-import Navigation from "./components/Navigation";
-
 export default function App() {
   const [queryClient] = createSignal(new QueryClient());
   const [trpcClient] = createSignal(
@@ -43,7 +41,6 @@ export default function App() {
       <QueryClientProvider client={queryClient()}>
         <Router root={(props) => (
           <Suspense>
-            <Navigation />
             {props.children}
           </Suspense>
         )}>
