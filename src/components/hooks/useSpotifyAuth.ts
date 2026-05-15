@@ -1,6 +1,6 @@
 import { add } from "date-fns/add";
 import { differenceInSeconds } from "date-fns/differenceInSeconds";
-import {isAfter} from "date-fns/isAfter";
+import { isAfter } from "date-fns/isAfter";
 import { createEffect, createSignal } from "solid-js";
 import { createStore } from "solid-js/store";
 import { SpotifyAuthState } from "~/server/trpc/router/auth";
@@ -24,7 +24,6 @@ export const useSpotifyAuth = () => {
   createEffect(() => {
     let timerReference: ReturnType<typeof setTimeout>;
     if (accessTokenQuery.isSuccess && accessTokenQuery.data) {
-      console.log(accessTokenQuery.data);
       setAuthTokenSignal(accessTokenQuery.data.access_token);
 
       const calculatedExpiration = add(new Date(), {

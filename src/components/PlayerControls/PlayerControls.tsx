@@ -41,24 +41,23 @@ const PlayerControls: Component<PlayerControlsType> = (props) => {
   const setNext = trpc.actions.next.useMutation();
   const setRepeat = trpc.actions.repeat.useMutation();
   const nextRepeatMode = () => {
-  switch (nowPlaying.data?.repeat_state) {
-    case "off":
-      return "context";
+    switch (nowPlaying.data?.repeat_state) {
+      case "off":
+        return "context";
 
-    case "context":
-      return "track";
+      case "context":
+        return "track";
 
-    default:
-      return "off";
-  }
-};
+      default:
+        return "off";
+    }
+  };
 
   return (
     <div
-      class="hidden fixed w-full left-0 bottom-0 flex items-center justify-between px-14"
+      class="fixed w-[calc(100%-3rem)] left-6 bottom-6 flex items-center justify-between px-14 backdrop-blur-2xl bg-black/40 border border-white/10 rounded-3xl shadow-2xl transition-all duration-300 hover:bg-black/50 overflow-hidden"
       style={{
-        "background-color": "rgba(0,0,0,0.2)",
-        height: "120px",
+        height: "100px",
         "align-items": "center",
       }}
     >

@@ -13,10 +13,10 @@ export type SpotifyAuthState = {
 export default router({
   accessToken: procedure.query(async ({ input, ctx }) => {
     try {
-      const client_id = import.meta.env.VITE_SPOTIFY_CLIENT_ID;
-      const client_secret = import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
+      const client_id = process.env.SPOTIFY_CLIENT_ID || process.env.VITE_SPOTIFY_CLIENT_ID || import.meta.env.VITE_SPOTIFY_CLIENT_ID;
+      const client_secret = process.env.SPOTIFY_CLIENT_SECRET || process.env.VITE_SPOTIFY_CLIENT_SECRET || import.meta.env.VITE_SPOTIFY_CLIENT_SECRET;
       const refresh_token: string =
-        import.meta.env.VITE_SPOTIFY_REFRESH_TOKEN || "";
+        process.env.SPOTIFY_REFRESH_TOKEN || process.env.VITE_SPOTIFY_REFRESH_TOKEN || import.meta.env.VITE_SPOTIFY_REFRESH_TOKEN || "";
       const basic = btoa(`${client_id}:${client_secret}`);
 
       const res = await fetch(SPOTIFY_TOKEN_ENDPOINT, {

@@ -1,5 +1,8 @@
 // @refresh reload
-import "@fontsource-variable/plus-jakarta-sans";
+import "@fontsource/poppins/400.css";
+import "@fontsource/poppins/600.css";
+import "@fontsource/poppins/700.css";
+import "@fontsource/righteous/400.css";
 import "@unocss/reset/tailwind.css";
 import "virtual:uno.css";
 
@@ -16,6 +19,8 @@ const getBaseUrl = () => {
   return `http://127.0.0.1:${process.env.PORT ?? 3000}`;
 };
 
+import Navigation from "./components/Navigation";
+
 export default function App() {
   const [queryClient] = createSignal(new QueryClient());
   const [trpcClient] = createSignal(
@@ -23,7 +28,6 @@ export default function App() {
       links: [
         httpBatchLink({
           url: `${getBaseUrl()}/api/trpc`,
-          // You can pass any HTTP headers you wish here
           async headers() {
             return {
               authorization: `Bearer ${getAuthTokenSignal()}`,
@@ -37,7 +41,12 @@ export default function App() {
   return (
     <trpc.Provider client={trpcClient()} queryClient={queryClient()}>
       <QueryClientProvider client={queryClient()}>
-        <Router root={(props) => <Suspense>{props.children}</Suspense>}>
+        <Router root={(props) => (
+          <Suspense>
+            <Navigation />
+            {props.children}
+          </Suspense>
+        )}>
           <FileRoutes />
         </Router>
       </QueryClientProvider>

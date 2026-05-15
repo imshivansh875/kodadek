@@ -27,7 +27,7 @@ export default function AuthCallback() {
 
   return (
     <div class="bg-white">
-      Copy this into the 'VITE_SPOTIFY_REFRESH_TOKEN' field in the .env file:
+      Copy this into the 'SPOTIFY_REFRESH_TOKEN' field in the .env file:
       <p>{refreshToken()}</p>
     </div>
   );

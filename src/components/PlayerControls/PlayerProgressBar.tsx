@@ -38,15 +38,15 @@ const PlayerProgressBar: Component = () => {
   
 
   return (
-    <div class="absolute top-0 left-0 w-full">
+    <div class="absolute top-0 left-0 w-full group cursor-pointer h-2 -mt-1">
       <div
-        class="absolute top-0 left-0 w-0 w-full origin-left"
-        style={{ height: "3px", "background-color": "rgba(0,0,0,0.2)" }}
+        class="absolute top-1 left-0 w-full origin-left rounded-r-full"
+        style={{ height: "4px", "background-color": "rgba(255,255,255,0.1)" }}
       ></div>
       <div
-        class="absolute top-0 left-0 w-0 w-full scale-x-0 origin-left bg-white"
+        class="absolute top-1 left-0 w-full scale-x-0 origin-left bg-cta rounded-r-full shadow-[0_0_10px_rgba(34,197,94,0.5)] transition-transform duration-1000 ease-linear"
         style={{
-          height: "3px",
+          height: "4px",
           transform: `scaleX(${playingProgress()})`,
         }}
       ></div>

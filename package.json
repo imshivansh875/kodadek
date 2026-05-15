@@ -8,6 +8,8 @@
   },
   "dependencies": {
     "@fontsource-variable/plus-jakarta-sans": "^5.2.8",
+    "@fontsource/poppins": "^5.2.7",
+    "@fontsource/righteous": "^5.2.7",
     "@solidjs/router": "^0.15.3",
     "@solidjs/start": "^1.2.0",
     "@tanstack/solid-query": "5.90.4",
@@ -19,6 +21,7 @@
     "cross-fetch": "^4.1.0",
     "date-fns": "^4.1.0",
     "extract-colors": "^4.2.1",
+    "lucide-solid": "^1.16.0",
     "prettier": "^3.6.2",
     "solid-js": "^1.9.9",
     "solid-start-trpc": "^0.0.16",

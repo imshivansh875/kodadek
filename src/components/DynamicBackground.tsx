@@ -45,7 +45,7 @@ const DynamicBackground: Component<DynamicBackgroundType> = (props) => {
 
   return (
     <div
-      class="h-full w-full top-0 left-0 p-12 bg-black fixed text-white"
+      class="h-full w-full top-0 left-0 p-12 bg-base fixed text-baseText transition-colors duration-1000 ease-in-out font-sans flex items-center justify-center"
       style={{
         "background-color": `${accentColor()}`,
       }}
